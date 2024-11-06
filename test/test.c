@@ -13,6 +13,9 @@
 #include <unity.h>
 #include "unity_config.h"
 
+TaskHandle_t priorityInversionThread;
+TaskHandle_t priorityInversionThreadMutex;
+
 void setUp(void) {}
 
 void tearDown(void) {}
@@ -50,13 +53,14 @@ void PriorityInversionTest(void * args)
     vTaskDelete(taskThread2);
     vTaskDelete(taskThread3);
     vTaskDelete(taskSupervisor);
+    vTaskDelete(priorityInversionThread);
     
 }
 
 void PriorityInversionTestMutex(void * args)
 {
-    printf("Startig the priority inversion test with mutex semaphore\n");
     vTaskDelay(10000);
+    printf("Startig the priority inversion test with mutex semaphore\n");
     // Create shared semaphore
     SemaphoreHandle_t sharedSem = xSemaphoreCreateMutex();
 
@@ -83,11 +87,11 @@ void PriorityInversionTestMutex(void * args)
                 MAIN_TASK_STACK_SIZE, NULL, SUPERVISOR_TASK_PRIORITY, &taskSupervisor);
 
     vTaskDelay(5000);
-    vTaskDelete(taskThread1);
+    // vTaskDelete(taskThread1);
     vTaskDelete(taskThread2);
-    vTaskDelete(taskThread3);
+    // vTaskDelete(taskThread3);
     vTaskDelete(taskSupervisor);
-    
+    vTaskDelete(priorityInversionThreadMutex);
 }
 
 int main (void)
@@ -99,8 +103,6 @@ int main (void)
     // RUN_TEST(PriorityInversionTest);
     // RUN_TEST(test_multiplication);
     // sleep_ms(5000);
-    TaskHandle_t priorityInversionThread;
-    TaskHandle_t priorityInversionThreadMutex;
     xTaskCreate(PriorityInversionTest, "priorityInversionThread",
                 MAIN_TASK_STACK_SIZE, NULL, 25, &priorityInversionThread);
 
@@ -108,6 +110,5 @@ int main (void)
                 MAIN_TASK_STACK_SIZE, NULL, 25, &priorityInversionThreadMutex);
 
     vTaskStartScheduler();
-    return 0;
     return UNITY_END();
 }
