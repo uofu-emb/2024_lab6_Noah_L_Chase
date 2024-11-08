@@ -1,10 +1,22 @@
-#include "FreeRTOS.h"
-#include "task.h"
-#include <stdio.h>
-
-#include "task_functions.h"
 #include "Threads.h"
 #include "unity.h"
+
+#include "FreeRTOSConfig.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "semphr.h"
+
+#include "task_functions.h"
+
+// #include "Threads.h"
+
+#include <stdio.h>
+#include <pico/stdlib.h>
+#include <stdint.h>
+#include <unity.h>
+#include "unity_config.h"
 
 // Define task priorities using macros
 #define TASK_PRIORITY_1 (tskIDLE_PRIORITY + 1UL)
@@ -18,6 +30,10 @@ void testRunner2(void* args);
 // Task handles
 TaskHandle_t xTask1, xTask2;
 TaskHandle_t testRunner2Task;
+
+void setUp(void) {}
+
+void tearDown(void) {}
 
 // Helper function to print which task is running
 void print_task_info(const char *task_name) {
