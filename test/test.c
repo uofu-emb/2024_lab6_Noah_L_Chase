@@ -15,14 +15,15 @@
 
 TaskHandle_t priorityInversionThread;
 TaskHandle_t priorityInversionThreadMutex;
+TaskHandle_t testRnnerTask;
 
 void setUp(void) {}
 
 void tearDown(void) {}
 
-void PriorityInversionTest(void * args)
+void PriorityInversionTest(void)
 {
-    printf("Startig the priority inversion test with binary semaphore\n");
+    printf("Starting the priority inversion test with binary semaphore\n");
     // Create shared semaphore
     SemaphoreHandle_t sharedSem = xSemaphoreCreateBinary();
 
@@ -48,19 +49,20 @@ void PriorityInversionTest(void * args)
     xTaskCreate(Supervisor, "Supervisor",
                 MAIN_TASK_STACK_SIZE, NULL, SUPERVISOR_TASK_PRIORITY, &taskSupervisor);
 
-    vTaskDelay(5000);
+    // vTaskDelay(5000);
+    sleep_ms(5000);
+    TEST_ASSERT_EQUAL(0, uxSemaphoreGetCount(sharedSem));
     vTaskDelete(taskThread1);
     vTaskDelete(taskThread2);
     vTaskDelete(taskThread3);
     vTaskDelete(taskSupervisor);
-    vTaskDelete(priorityInversionThread);
-    
+
+    vSemaphoreDelete(sharedSem);
 }
 
-void PriorityInversionTestMutex(void * args)
+void PriorityInversionTestMutex(void)
 {
-    vTaskDelay(10000);
-    printf("Startig the priority inversion test with mutex semaphore\n");
+    printf("Starting the priority inversion test with mutex semaphore\n");
     // Create shared semaphore
     SemaphoreHandle_t sharedSem = xSemaphoreCreateMutex();
 
@@ -69,7 +71,7 @@ void PriorityInversionTestMutex(void * args)
         printf("Problem creating semaphore\n");
     }
 
-    xSemaphoreGive(sharedSem);
+    // xSemaphoreGive(sharedSem);
 
     const char *rtos_name;
     rtos_name = "FreeRTOS";
@@ -86,29 +88,43 @@ void PriorityInversionTestMutex(void * args)
     xTaskCreate(Supervisor, "Supervisor",
                 MAIN_TASK_STACK_SIZE, NULL, SUPERVISOR_TASK_PRIORITY, &taskSupervisor);
 
-    vTaskDelay(5000);
+    sleep_ms(5000);
+    TEST_ASSERT_EQUAL(1, uxSemaphoreGetCount(sharedSem));
     // vTaskDelete(taskThread1);
-    vTaskDelete(taskThread2);
+    // vTaskDelete(taskThread2);
     // vTaskDelete(taskThread3);
-    vTaskDelete(taskSupervisor);
-    vTaskDelete(priorityInversionThreadMutex);
+    // vTaskDelete(taskSupervisor);
+
+    vSemaphoreDelete(sharedSem);
+}
+
+void testRunner(void* args)
+{
+    while(1)
+    {
+        sleep_ms(5000); // Give time for TTY to attach.
+        printf("Start tests\n");
+        UNITY_BEGIN();
+        RUN_TEST(PriorityInversionTest);
+        RUN_TEST(PriorityInversionTestMutex);
+        UNITY_END();
+    }
 }
 
 int main (void)
 {
     stdio_init_all();
-    sleep_ms(5000); // Give time for TTY to attach.
-    printf("Start tests\n");
-    UNITY_BEGIN();
     // RUN_TEST(PriorityInversionTest);
     // RUN_TEST(test_multiplication);
     // sleep_ms(5000);
-    xTaskCreate(PriorityInversionTest, "priorityInversionThread",
-                MAIN_TASK_STACK_SIZE, NULL, 25, &priorityInversionThread);
+    // xTaskCreate(PriorityInversionTest, "priorityInversionThread",
+    //             MAIN_TASK_STACK_SIZE, NULL, 25, &priorityInversionThread);
 
-    xTaskCreate(PriorityInversionTestMutex, "priorityInversionThreadMutex",
-                MAIN_TASK_STACK_SIZE, NULL, 25, &priorityInversionThreadMutex);
+    // xTaskCreate(PriorityInversionTestMutex, "priorityInversionThreadMutex",
+    //             MAIN_TASK_STACK_SIZE, NULL, 25, &priorityInversionThreadMutex);
+    xTaskCreate(testRunner, "testRunnerThread",
+                MAIN_TASK_STACK_SIZE, NULL, 30, &testRnnerTask);
 
     vTaskStartScheduler();
-    return UNITY_END();
+    return 0;
 }

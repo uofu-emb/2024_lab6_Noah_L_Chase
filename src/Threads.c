@@ -46,6 +46,9 @@ void Thread3(void * args)
     printf("Attempting to get semaphore %s\n", __func__);
     xSemaphoreTake( sharedSem, portMAX_DELAY );
     printf("Got semaphore %s\n", __func__);
+
+    printf("Giving semaphore %s\n", __func__);
+    xSemaphoreGive(sharedSem);
 }
 
 void Supervisor(void* args)
@@ -57,16 +60,16 @@ void Supervisor(void* args)
 
     while (1) {
         // Get task statistics
-        uxArrayUsed = uxTaskGetSystemState(xTaskDetails, uxArraySize, &ulTotalRunTime);
+        // uxArrayUsed = uxTaskGetSystemState(xTaskDetails, uxArraySize, &ulTotalRunTime);
 
-        printf("Task Statistics:\n");
-        for (UBaseType_t i = 0; i < uxArrayUsed; i++) {
-            printf("Task Name: %s\n", xTaskDetails[i].pcTaskName);
-            printf("  State: %d\n", xTaskDetails[i].eCurrentState);
-            printf("  Priority: %d\n", xTaskDetails[i].uxCurrentPriority);
-            printf("  Run Time: %u\n", xTaskDetails[i].ulRunTimeCounter);
-            printf("  Stack High Water Mark: %u\n", xTaskDetails[i].usStackHighWaterMark);
-        }
+        // printf("Task Statistics:\n");
+        // for (UBaseType_t i = 0; i < uxArrayUsed; i++) {
+        //     printf("Task Name: %s\n", xTaskDetails[i].pcTaskName);
+        //     printf("  State: %d\n", xTaskDetails[i].eCurrentState);
+        //     printf("  Priority: %d\n", xTaskDetails[i].uxCurrentPriority);
+        //     printf("  Run Time: %u\n", xTaskDetails[i].ulRunTimeCounter);
+        //     printf("  Stack High Water Mark: %u\n", xTaskDetails[i].usStackHighWaterMark);
+        // }
 
         printf("Total Run Time: %u\n\n", ulTotalRunTime);
 
