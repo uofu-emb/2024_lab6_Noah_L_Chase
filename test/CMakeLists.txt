@@ -1,5 +1,5 @@
-add_executable(priorityInversionTests test.c ../src/Threads.c unity_config.c)
-add_executable(taskTest priority_tests.c ../src/task1_task2.c unity_config.c)
+add_executable(priorityInversionTests test.c timerSetup.c ../src/Threads.c unity_config.c)
+add_executable(taskTest priority_tests.c timerSetup.c ../src/task1_task2.c unity_config.c)
 
 target_link_libraries(priorityInversionTests PRIVATE
   pico_stdlib

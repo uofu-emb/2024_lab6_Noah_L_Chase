@@ -1,5 +1,6 @@
 # This is the main binary. List your C files here.
 add_executable(priority_inversion
+    ../test/timerSetup.c
     Threads.c
     priority_inversion.c
     )

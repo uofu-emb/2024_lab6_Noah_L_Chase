@@ -1,3 +1,5 @@
+#include <pico/stdlib.h>
+
 #include "FreeRTOSConfig.h"
 
 #include "FreeRTOS.h"
@@ -7,8 +9,9 @@
 
 #include "Threads.h"
 
+#include "pico/time.h"
+
 #include <stdio.h>
-#include <pico/stdlib.h>
 #include <stdint.h>
 #include <unity.h>
 #include "unity_config.h"
@@ -48,13 +51,14 @@ void PriorityInversionTest(void)
                 MAIN_TASK_STACK_SIZE, NULL, SUPERVISOR_TASK_PRIORITY, &taskSupervisor);
 
     vTaskDelay(5000);
-    // sleep_ms(5000);
+
+    // Test that the semaphore is NOT available
     TEST_ASSERT_EQUAL(0, uxSemaphoreGetCount(sharedSem));
+
     vTaskDelete(taskThread1);
     vTaskDelete(taskThread2);
     vTaskDelete(taskThread3);
     vTaskDelete(taskSupervisor);
-
     vSemaphoreDelete(sharedSem);
 }
 
@@ -69,8 +73,6 @@ void PriorityInversionTestMutex(void)
         printf("Problem creating semaphore\n");
     }
 
-    // xSemaphoreGive(sharedSem);
-
     TaskHandle_t taskThread1;
     TaskHandle_t taskThread2;
     TaskHandle_t taskThread3;
@@ -84,15 +86,15 @@ void PriorityInversionTestMutex(void)
     xTaskCreate(Supervisor, "Supervisor",
                 MAIN_TASK_STACK_SIZE, NULL, SUPERVISOR_TASK_PRIORITY, &taskSupervisor);
 
-    vTaskDelay(10000);
+    vTaskDelay(5000);
+
+    // Test that the semaphore is available
     TEST_ASSERT_EQUAL(1, uxSemaphoreGetCount(sharedSem));
+
     vTaskDelete(taskThread1);
     vTaskDelete(taskThread2);
     vTaskDelete(taskThread3);
     vTaskDelete(taskSupervisor);
-
-    printf("Leaving final test\n");
-
     vSemaphoreDelete(sharedSem);
 }
 
