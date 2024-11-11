@@ -20,5 +20,5 @@ bool timer_callback(repeating_timer_t* rt)
 
 void timerSetup(void)
 {
-    bool timer_add = add_repeating_timer_ms(10, timer_callback, NULL, &timer);
+    bool timer_add = add_repeating_timer_ms(-1, timer_callback, NULL, &timer);
 }

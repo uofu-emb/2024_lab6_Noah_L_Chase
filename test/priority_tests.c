@@ -40,27 +40,35 @@ void print_task_info(const char *task_name) {
 // Task wrapper for busy_busy function
 void vBusyBusyTask1(void *args) {
     print_task_info("Task1: busy_busy");
-    busy_busy();
+    for (int i = 0; ; i++);
+    // busy_busy();
 }
 
 void vBusyBusyTask2(void *args) {
     print_task_info("Task2: busy_busy");
-    busy_busy();
+    for (int i = 0; ; i++);
+    // busy_busy();
 }
 
 // Task wrapper for busy_yield function
 void vBusyYieldTask1(void *args) {
     print_task_info("Task1: busy_yield");
-    busy_yield();
+    // busy_yield();
+    for (int i = 0; ; i++) {
+        taskYIELD();
+    }
 }
 
 void vBusyYieldTask2(void *args) {
     print_task_info("Task2: busy_yield");
-    busy_yield();
+    // busy_yield();
+    for (int i = 0; ; i++) {
+        taskYIELD();
+    }
 }
 
 // Helper function to gather and print runtime statistics and test each case
-void gather_runtime_stats(const char *test_name) {
+void gather_runtime_stats(const char *test_name, bool equal, bool task1Larger) {
     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
     UBaseType_t arraySize = 20;
     TaskStatus_t xTaskDetails[arraySize];
@@ -68,10 +76,39 @@ void gather_runtime_stats(const char *test_name) {
     printf("Size of stats == %u\n", uxArraySize);
     printf("Num actual tasks == %u\n", numTasks);
 
+    uint32_t task1Runtime = 0;
+    uint32_t task2Runtime = 0;
+
+
     for(int i = 0; i < uxArraySize; i++)
     {
         printf("Thread running: %s\n", xTaskDetails[i].pcTaskName);
         printf("Task Run Time: %u\n", xTaskDetails[i].ulRunTimeCounter);
+
+        if( xTaskDetails[i].pcTaskName == "task1" )
+        {
+            task1Runtime = xTaskDetails[i].ulRunTimeCounter;
+        }
+
+        if( xTaskDetails[i].pcTaskName == "task2" )
+        {
+            task2Runtime = xTaskDetails[i].ulRunTimeCounter;
+        }
+    }
+
+    if( equal == true )
+    {
+        TEST_ASSERT_EQUAL(task1Runtime, task2Runtime);
+    }
+    else if( task1Larger == true )
+    {
+        TEST_ASSERT_EQUAL( true, task1Runtime > task2Runtime );
+    }
+    else
+    {
+        printf("task2Runtime == %u\n", task2Runtime);
+        printf("task1Runtime == %u\n", task1Runtime);
+        TEST_ASSERT_EQUAL( true, task2Runtime > task1Runtime );
     }
 }
 
@@ -81,7 +118,7 @@ void test_same_priority_busy_busy(void) {
     xTaskCreate(vBusyBusyTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, TASK_PRIORITY_1, &xTask2);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gather_runtime_stats("test_same_priority_busy_busy");
+    gather_runtime_stats("test_same_priority_busy_busy", true, false);
 
     vTaskDelete(xTask1);
     vTaskDelete(xTask2);
@@ -92,7 +129,7 @@ void test_same_priority_busy_yield(void) {
     xTaskCreate(vBusyYieldTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, TASK_PRIORITY_1, &xTask2);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gather_runtime_stats("test_same_priority_busy_yield");
+    gather_runtime_stats("test_same_priority_busy_yield", false, false);
 
     vTaskDelete(xTask1);
     vTaskDelete(xTask2);
@@ -103,7 +140,7 @@ void test_same_priority_mixed(void) {
     xTaskCreate(vBusyYieldTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, TASK_PRIORITY_1, &xTask2);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gather_runtime_stats("test_same_priority_mixed");
+    gather_runtime_stats("test_same_priority_mixed", false, true);
 
     vTaskDelete(xTask1);
     vTaskDelete(xTask2);
@@ -114,7 +151,7 @@ void test_different_priority_busy_busy_high_first(void) {
     xTaskCreate(vBusyBusyTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, TASK_PRIORITY_1, &xTask2);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gather_runtime_stats("test_different_priority_busy_busy_high_first");
+    gather_runtime_stats("test_different_priority_busy_busy_high_first", false, true);
 
     vTaskDelete(xTask1);
     vTaskDelete(xTask2);
@@ -125,7 +162,7 @@ void test_different_priority_busy_busy_low_first(void) {
     xTaskCreate(vBusyBusyTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, TASK_PRIORITY_2, &xTask1);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gather_runtime_stats("test_different_priority_busy_busy_low_first");
+    gather_runtime_stats("test_different_priority_busy_busy_low_first", false, true);
 
     vTaskDelete(xTask1);
     vTaskDelete(xTask2);
@@ -136,7 +173,7 @@ void test_different_priority_busy_yield_high_first(void) {
     xTaskCreate(vBusyYieldTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, TASK_PRIORITY_1, &xTask2);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gather_runtime_stats("test_different_priority_busy_yield_high_first");
+    gather_runtime_stats("test_different_priority_busy_yield_high_first", false, true);
 
     vTaskDelete(xTask1);
     vTaskDelete(xTask2);
