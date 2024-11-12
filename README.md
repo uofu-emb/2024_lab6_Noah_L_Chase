@@ -2,7 +2,7 @@
 
 ![example workflow](https://github.com/uofu-emb/2024_lab6_Noah_L_Chase/actions/workflows/main.yml/badge.svg)
 
-# Lab 6 Scheduling (Noah Lomu, Chase Griswold)
+# Lab 6 Scheduling (Noah Mecham, Chase Griswold)
 
 # Objectives
 Evaluate production/consumption ratio to prevent overflow.
